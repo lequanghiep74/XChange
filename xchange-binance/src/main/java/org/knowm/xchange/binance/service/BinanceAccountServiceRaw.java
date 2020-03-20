@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.binance.BinanceAdapters;
+import org.knowm.xchange.binance.BinanceErrorAdapter;
 import org.knowm.xchange.binance.dto.BinanceException;
 import org.knowm.xchange.binance.dto.account.*;
 import org.knowm.xchange.binance.dto.account.DepositList.BinanceDeposit;
@@ -155,5 +156,14 @@ public class BinanceAccountServiceRaw extends BinanceBaseService {
       throw exception;
     }
     return result.getData();
+  }
+
+  public BinanceMarginAccountInformation getMarginAccount() throws IOException {
+    try {
+      return binance.marginAccount(
+          getRecvWindow(), getTimestamp(), super.apiKey, super.signatureCreator);
+    } catch (BinanceException e) {
+      throw BinanceErrorAdapter.adapt(e);
+    }
   }
 }

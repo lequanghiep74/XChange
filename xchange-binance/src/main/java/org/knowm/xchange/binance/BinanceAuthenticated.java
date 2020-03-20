@@ -4,27 +4,11 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import org.knowm.xchange.binance.dto.BinanceException;
 import org.knowm.xchange.binance.dto.account.*;
-import org.knowm.xchange.binance.dto.trade.BinanceCancelledOrder;
-import org.knowm.xchange.binance.dto.trade.BinanceListenKey;
-import org.knowm.xchange.binance.dto.trade.BinanceNewOrder;
-import org.knowm.xchange.binance.dto.trade.BinanceOrder;
-import org.knowm.xchange.binance.dto.trade.BinanceTrade;
-import org.knowm.xchange.binance.dto.trade.OrderSide;
-import org.knowm.xchange.binance.dto.trade.OrderType;
-import org.knowm.xchange.binance.dto.trade.TimeInForce;
+import org.knowm.xchange.binance.dto.trade.*;
 import si.mazi.rescu.ParamsDigest;
 
 @Path("")
@@ -491,5 +475,63 @@ public interface BinanceAuthenticated extends Binance {
   @Path("/api/v1/userDataStream?listenKey={listenKey}")
   Map<?, ?> closeUserDataStream(
       @HeaderParam(X_MBX_APIKEY) String apiKey, @PathParam("listenKey") String listenKey)
+      throws IOException, BinanceException;
+
+  // For margin
+
+  @POST
+  @Path("sapi/v1/margin/order")
+  /**
+   * Send in a new margin order
+   *
+   * @param symbol
+   * @param side
+   * @param type
+   * @param timeInForce
+   * @param quantity
+   * @param price optional, must be provided for limit orders only
+   * @param newClientOrderId optional, a unique id for the order. Automatically generated if not
+   *     sent.
+   * @param stopPrice optional, used with stop orders
+   * @param icebergQty optional, used with iceberg orders
+   * @param recvWindow optional
+   * @param timestamp
+   * @return
+   * @throws IOException
+   * @throws BinanceException
+   */
+  BinanceNewOrder newMarginOrder(
+      @FormParam("symbol") String symbol,
+      @FormParam("side") OrderSide side,
+      @FormParam("type") OrderType type,
+      @FormParam("timeInForce") TimeInForce timeInForce,
+      @FormParam("quantity") BigDecimal quantity,
+      @FormParam("price") BigDecimal price,
+      @FormParam("newClientOrderId") String newClientOrderId,
+      @FormParam("stopPrice") BigDecimal stopPrice,
+      @FormParam("icebergQty") BigDecimal icebergQty,
+      @FormParam("recvWindow") Long recvWindow,
+      @FormParam("timestamp") long timestamp,
+      @HeaderParam(X_MBX_APIKEY) String apiKey,
+      @QueryParam(SIGNATURE) ParamsDigest signature)
+      throws IOException, BinanceException;
+
+  @GET
+  @Path("sapi/v1/margin/loan")
+  BasePageResponse<Loan> allLoans(
+      @QueryParam("asset") String asset,
+      @QueryParam("size") int size,
+      @QueryParam("timestamp") long timestamp,
+      @HeaderParam(X_MBX_APIKEY) String apiKey,
+      @QueryParam(SIGNATURE) ParamsDigest signature)
+      throws IOException, BinanceException;
+
+  @GET
+  @Path("sapi/v1/margin/account")
+  BinanceMarginAccountInformation marginAccount(
+      @QueryParam("recvWindow") Long recvWindow,
+      @QueryParam("timestamp") long timestamp,
+      @HeaderParam(X_MBX_APIKEY) String apiKey,
+      @QueryParam(SIGNATURE) ParamsDigest signature)
       throws IOException, BinanceException;
 }
